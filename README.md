@@ -21,19 +21,23 @@ This repository contains the backend machine learning service for the JobMate pl
 - **Environment Management**: python-dotenv
 - **Containerization**: Docker
 
-## 📋 API Endpoints
+## 🔐 Authentication
 
-All endpoints (except `/` and `/healthcheck`) require an Authorization header.
+All endpoints (except `/` and `/healthcheck`) require an Authorization header:
 
-**Required Header:**
 ```
 Authorization: Bearer <your_api_token>
 ```
 
+---
+
+## 📋 API Endpoints
+
 ### 1. Get Root Message
-- **Endpoint**: `/`
-- **Method**: `GET`
-- **Description**: Shows a welcome message and lists all available endpoints
+
+**Endpoint:** `/`  
+**Method:** `GET`  
+**Description:** Shows a welcome message and lists all available endpoints
 
 **Success Response (200 OK):**
 ```json
@@ -50,10 +54,13 @@ Authorization: Bearer <your_api_token>
 }
 ```
 
+---
+
 ### 2. Health Check
-- **Endpoint**: `/healthcheck`
-- **Method**: `GET`
-- **Description**: A simple health check to verify if the service is running
+
+**Endpoint:** `/healthcheck`  
+**Method:** `GET`  
+**Description:** A simple health check to verify if the service is running
 
 **Success Response (200 OK):**
 ```json
@@ -62,10 +69,13 @@ Authorization: Bearer <your_api_token>
 }
 ```
 
+---
+
 ### 3. Recommend Jobs
-- **Endpoint**: `/recommend`
-- **Method**: `POST`
-- **Description**: Recommends jobs based on the provided resume text
+
+**Endpoint:** `/recommend`  
+**Method:** `POST`  
+**Description:** Recommends jobs based on the provided resume text
 
 **Request Body:**
 ```json
@@ -88,10 +98,13 @@ Authorization: Bearer <your_api_token>
 }
 ```
 
+---
+
 ### 4. Predict Job Category
-- **Endpoint**: `/predict-category`
-- **Method**: `POST`
-- **Description**: Predicts the job category from a job description
+
+**Endpoint:** `/predict-category`  
+**Method:** `POST`  
+**Description:** Predicts the job category from a job description
 
 **Request Body:**
 ```json
@@ -107,10 +120,13 @@ Authorization: Bearer <your_api_token>
 }
 ```
 
+---
+
 ### 5. Get All Categories
-- **Endpoint**: `/categories`
-- **Method**: `GET`
-- **Description**: Returns a list of all unique job categories the model was trained on
+
+**Endpoint:** `/categories`  
+**Method:** `GET`  
+**Description:** Returns a list of all unique job categories the model was trained on
 
 **Success Response (200 OK):**
 ```json
@@ -124,10 +140,13 @@ Authorization: Bearer <your_api_token>
 }
 ```
 
+---
+
 ### 6. Get Job Details
-- **Endpoint**: `/jobs/<int:job_id>`
-- **Method**: `GET`
-- **Description**: Returns all metadata for a specific job ID
+
+**Endpoint:** `/jobs/<int:job_id>`  
+**Method:** `GET`  
+**Description:** Returns all metadata for a specific job ID
 
 **Success Response (200 OK):**
 ```json
@@ -141,7 +160,7 @@ Authorization: Bearer <your_api_token>
 
 ## ⚙️ Setup and Development
 
-### Environment Variables
+### 🔧 Environment Variables
 
 Create a `.env` file in the project root with the following variables:
 
@@ -153,53 +172,53 @@ BUCKET_NAME="model-ml-jobmate"
 API_TOKEN="mysecretbearer123"
 ```
 
-### Local Setup
+---
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repository-url>
-   cd <repository-directory>
-   ```
+### 💻 Local Setup
 
-2. **Create a virtual environment:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+**1. Clone the repository:**
+```bash
+git clone <your-repository-url>
+cd <repository-directory>
+```
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+**2. Create a virtual environment:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-4. **Set up Application Credentials:**
-   To access the GCS bucket locally, you need to authenticate. Make sure you have the Google Cloud SDK installed and run:
-   ```bash
-   gcloud auth application-default login
-   ```
+**3. Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
 
-5. **Run the application:**
-   ```bash
-   flask --app main run --debug
-   ```
+**4. Set up Application Credentials:**
+To access the GCS bucket locally, authenticate by running:
+```bash
+gcloud auth application-default login
+```
+
+**5. Run the application:**
+```bash
+flask --app main run --debug
+```
 
 The application will be available at `http://127.0.0.1:5000`.
 
-## 🚀 Deployment to Google Cloud Run
+---
+
+### ☁️ Deployment to Google Cloud Run
 
 The application is designed to be deployed as a container on Google Cloud Run.
 
-### Step 1: Build and Push the Docker Image
-
-This command uses Google Cloud Build to create a Docker image from the Dockerfile and pushes it to your project's Google Container Registry (GCR).
+**Step 1: Build and Push the Docker Image**
 
 ```bash
 gcloud builds submit --tag gcr.io/capstone-jobseeker-dd654/jobmate-api .
 ```
 
-### Step 2: Deploy to Cloud Run
-
-This command deploys the container image from GCR to a new or existing Cloud Run service.
+**Step 2: Deploy to Cloud Run**
 
 ```bash
 gcloud run deploy jobmate-api \
@@ -215,7 +234,7 @@ gcloud run deploy jobmate-api \
   --memory 8Gi
 ```
 
-### Key Deployment Flags:
+**Key Deployment Flags:**
 
 - `--image`: Specifies the container image to deploy
 - `--region`: Sets the deployment region
