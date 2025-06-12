@@ -1,262 +1,214 @@
-# 🧠 JobMate ML API
+# JobMate ML API
 
-Machine Learning inference API for **JobMate** — A robust microservice developed with FastAPI and powered by Scikit-learn recommendation models.
+This repository contains the backend machine learning service for the **JobMate** platform. The API provides intelligent job recommendation and classification functionalities, designed to be a scalable and secure microservice running on Google Cloud.
 
-This service provides **Job Recommendation** and **Resume Classification** capabilities, designed to be deployed independently (e.g., via Google Cloud Run) for seamless integration with the main REST API backend.
+## Live API Endpoint
 
-## ⚙️ Tech Stack
+You can access the live JobMate ML API at:
 
-- **Python 3.10**
-- **FastAPI** - Modern web framework for building APIs
-- **Scikit-learn** - Machine learning library
-- **Pandas, NumPy, SciPy** - Data processing and scientific computing
-- **Uvicorn + Gunicorn** - ASGI server for production
-- **Docker** - Containerization (optional)
+[https://jobmate-api-705829099986.asia-southeast2.run.app](https://jobmate-api-705829099986.asia-southeast2.run.app)
 
-## 🚀 API Endpoints
+## Features
 
-### Health Check
-**GET** `/healthcheck`
+- **Resume-Based Job Recommendation**: Recommends the top 5 most relevant jobs by analyzing the text of a user's resume and calculating cosine similarity against a database of job vectors.
+- **Job Category Prediction**: Predicts the category of a job (e.g., "Software Development," "Healthcare") based on its description using a trained supervised learning model.
+- **Centralized Model Management**: All ML models and data are loaded dynamically from a Google Cloud Storage bucket, allowing for updates without redeploying the application code.
+- **Secure API**: Endpoints are protected via Bearer Token authentication.
+- **Containerized & Cloud-Native**: Packaged with Docker and deployed on Google Cloud Run for scalability and reliability.
 
-Check if the server is running properly.
+## Tech Stack
 
-**Response:**
-```json
+- **Backend**: Flask, Gunicorn
+- **Machine Learning**: Scikit-learn
+- **Data Handling**: Pandas, NumPy, SciPy
+- **Cloud Services**: Google Cloud Run, Google Cloud Storage, Google Cloud Build
+- **Environment Management**: python-dotenv
+- **Containerization**: Docker
+
+## API Endpoints
+
+All endpoints (except `/` and `/healthcheck`) require an `Authorization` header.
+
+### Required Header:
+
+```bash
+Authorization: Bearer <your_api_token>
+1. Get Root Message
+Endpoint: /
+Method: GET
+Description: Shows a welcome message and lists all available endpoints.
+Success Response (200 OK):
+
+json
+Salin
+{
+  "message": "✅ JobMate ML API is running 🚀",
+  "docs": "Not available.",
+  "health": "/healthcheck",
+  "endpoints": [
+    "POST /recommend",
+    "POST /predict-category",
+    "GET /categories",
+    "GET /jobs/{job_id}"
+  ]
+}
+2. Health Check
+Endpoint: /healthcheck
+Method: GET
+Description: A simple health check to verify if the service is running.
+Success Response (200 OK):
+
+json
+Salin
 {
   "status": "ok"
 }
-```
+3. Recommend Jobs
+Endpoint: /recommend
+Method: POST
+Description: Recommends jobs based on the provided resume text.
+Request Body:
 
-### 🔒 Authentication
-
-All endpoints except `/healthcheck` require the following header:
-```
-Authorization: Bearer mysecrettoken123
-```
-
-### Job Recommendations
-**POST** `/recommend`
-
-Get job recommendations based on resume content.
-
-**Request Body:**
-```json
+json
+Salin
 {
-  "text": "Experienced Python developer with background in data science and machine learning..."
+  "text": "Experienced in Python, data analysis, and machine learning using Scikit-learn and Pandas. Seeking a data scientist role."
 }
-```
+Success Response (200 OK):
 
-**Response:**
-```json
+json
+Salin
 {
   "recommendations": [
     {
-      "job_id": 12,
+      "job_id": 123,
       "job_title": "Data Scientist",
-      "description": "We are looking for a data scientist who can...",
-      "similarity_score": 0.8235
+      "description": "We are looking for a data scientist proficient in Python...",
+      "similarity_score": 0.8971
     }
   ]
 }
-```
+4. Predict Job Category
+Endpoint: /predict-category
+Method: POST
+Description: Predicts the job category from a job description.
+Request Body:
 
-### Job Category Prediction
-**POST** `/predict-category`
-
-Predict job category from resume content.
-
-**Request Body:**
-```json
+json
+Salin
 {
-  "text": "Frontend engineer with experience in React and Vue..."
+  "description": "Job responsibilities include developing web applications with React and Node.js."
 }
-```
+Success Response (200 OK):
 
-**Response:**
-```json
+json
+Salin
 {
-  "predicted_category": "Software Engineer"
+  "predicted_category": "Information Technology"
 }
-```
+5. Get All Categories
+Endpoint: /categories
+Method: GET
+Description: Returns a list of all unique job categories the model was trained on.
+Success Response (200 OK):
 
-### Available Categories
-**GET** `/categories`
-
-Get all available job categories in the classification model.
-
-**Response:**
-```json
+json
+Salin
 {
   "categories": [
-    "Data Analyst",
-    "Software Engineer",
-    "Project Manager"
+    "Accounting",
+    "Engineering",
+    "Healthcare",
+    "Information Technology"
   ]
 }
-```
+6. Get Job Details
+Endpoint: /jobs/<int:job_id>
+Method: GET
+Description: Returns all metadata for a specific job ID.
+Success Response (200 OK):
 
-### Job Details
-**GET** `/jobs/{job_id}`
-
-Get complete job details by job ID.
-
-**Example:** `GET /jobs/5`
-
-**Response:**
-```json
+json
+Salin
 {
-  "id": 5,
-  "Job Title": "ML Engineer",
-  "Job Description": "We need an ML engineer with experience in NLP..."
+  "id": 123,
+  "Job Title": "Data Scientist",
+  "Job Description": "Full job description text...",
+  "Company": "Tech Corp"
 }
-```
+Setup and Development
+Environment Variables
+Create a .env file in the project root with the following variables:
 
-## 📁 Project Structure
+bash
+Salin
+# The name of the GCS bucket where models are stored
+BUCKET_NAME="model-ml-jobmate"
 
-```
-jobmate-ml-api/
-├── main.py                      # FastAPI application entry point
-├── models/                      # Pre-trained ML models and data
-│   ├── tfidf_vectorizer.pkl     # TF-IDF vectorizer for text processing
-│   ├── supervised_vectorizer.pkl # Supervised learning vectorizer
-│   ├── job_classifier.pkl       # Job classification model
-│   ├── job_vectors.npz          # Pre-computed job vectors
-│   └── job_metadata.csv         # Job metadata database
-├── requirements.txt             # Python dependencies
-├── Dockerfile                   # Docker configuration
-├── .dockerignore               # Docker ignore patterns
-├── .gitignore                  # Git ignore patterns
-└── README.md                   # Project documentation
-```
+# The secret token required to authenticate with the API
+API_TOKEN="mysecretbearer123"
+Local Setup
+Clone the repository:
 
-## 🛠️ Local Development
+bash
+Salin
+git clone <your-repository-url>
+cd <repository-directory>
+Create a virtual environment:
 
-### Prerequisites
-- Python 3.10 or higher
-- pip package manager
+bash
+Salin
+python3 -m venv venv
+source venv/bin/activate
+Install dependencies:
 
-### Setup Instructions
+bash
+Salin
+pip install -r requirements.txt
+Set up Application Credentials: To access the GCS bucket locally, authenticate by running:
 
-1. **Create and activate virtual environment**
-   ```bash
-   python -m venv .venv
-   
-   # On Linux/macOS
-   source .venv/bin/activate
-   
-   # On Windows
-   .venv\Scripts\activate
-   ```
+bash
+Salin
+gcloud auth application-default login
+Run the application:
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+bash
+Salin
+flask --app main run --debug
+The application will be available at http://127.0.0.1:5000.
 
-3. **Run the development server**
-   ```bash
-   uvicorn main:app --reload
-   ```
+Deployment to Google Cloud Run
+The application is designed to be deployed as a container on Google Cloud Run.
 
-4. **Access the API**
-   - API Base URL: http://localhost:8000
-   - Interactive API Docs (Swagger): http://localhost:8000/docs
-   - Alternative API Docs (ReDoc): http://localhost:8000/redoc
+Build and Push the Docker Image:
 
-## 🐳 Docker Deployment
+bash
+Salin
+gcloud builds submit --tag gcr.io/capstone-jobseeker-dd654/jobmate-api .
+Deploy to Cloud Run:
 
-### Build Docker Image
-```bash
-docker build -t jobmate-ml-api .
-```
+bash
+Salin
+gcloud run deploy jobmate-api \
+  --image gcr.io/capstone-jobseeker-dd654/jobmate-api:latest \
+  --region asia-southeast2 \
+  --platform managed \
+  --allow-unauthenticated \
+  --set-env-vars BUCKET_NAME=model-ml-jobmate,API_TOKEN=mysecretbearer123 \
+  --min-instances 0 \
+  --max-instances 1 \
+  --timeout 300 \
+  --cpu 2 \
+  --memory 8Gi
+Key Deployment Flags:
+--image: Specifies the container image to deploy.
 
-### Run Docker Container
-```bash
-docker run -p 8000:8000 jobmate-ml-api
-```
+--region: Sets the deployment region.
 
-## ☁️ Google Cloud Run Deployment
+--allow-unauthenticated: Makes the service publicly accessible (the application's own token auth provides security).
 
-### Prerequisites
-- Google Cloud SDK installed and configured
-- Docker installed
-- Google Cloud project with billing enabled
+--set-env-vars: Injects the required environment variables into the running container.
 
-### Deployment Steps
+--min-instances/--max-instances: Configures autoscaling behavior.
 
-1. **Build and tag Docker image**
-   ```bash
-   docker build -t gcr.io/[PROJECT_ID]/jobmate-ml-api .
-   ```
-
-2. **Push to Google Container Registry**
-   ```bash
-   docker push gcr.io/[PROJECT_ID]/jobmate-ml-api
-   ```
-
-3. **Deploy to Cloud Run**
-   ```bash
-   gcloud run deploy jobmate-ml-api \
-     --image gcr.io/[PROJECT_ID]/jobmate-ml-api \
-     --platform managed \
-     --region asia-southeast2 \
-     --allow-unauthenticated \
-     --port 8000 \
-     --memory 2Gi \
-     --cpu 1
-   ```
-
-### Environment Variables (Optional)
-You can set environment variables during deployment:
-```bash
-gcloud run deploy jobmate-ml-api \
-  --image gcr.io/[PROJECT_ID]/jobmate-ml-api \
-  --set-env-vars="API_TOKEN=your-secret-token"
-```
-
-## 🧪 Testing
-
-### Manual Testing
-Use the interactive Swagger documentation at `/docs` endpoint to test all API endpoints.
-
-### cURL Examples
-
-**Health Check:**
-```bash
-curl -X GET "http://localhost:8000/healthcheck"
-```
-
-**Job Recommendation:**
-```bash
-curl -X POST "http://localhost:8000/recommend" \
-  -H "Authorization: Bearer mysecrettoken123" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Python developer with ML experience"}'
-```
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is part of the JobMate application suite.
-
-## 👨‍💻 Team
-
-**JobMate Development Team**  
-CC25-CF236 Cohort
-
----
-
-### 🔗 Related Repositories
-- [JobMate Main API](link-to-main-api)
-- [JobMate Frontend](link-to-frontend)
-- [JobMate Documentation](link-to-docs)
-
-### 📞 Support
-For questions or support, please contact the development team or create an issue in this repository.
+--cpu/--memory: Allocates resources for the service instance.
